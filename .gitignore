@@ -1,0 +1,47 @@
+# Dependencies
+/node_modules
+
+# Vite build output
+/dist
+/out
+
+# Vite cache
+.vite/
+.turbo/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables
+.env
+.env*.local
+.env*.production
+.env*.development
+!.env.example # Usually good to commit an example env file
+
+# IDE / Editor specific
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Coverage directory used by tools like Jest or Vitest
+coverage
