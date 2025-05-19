@@ -1,8 +1,94 @@
 // src/data/appData.js
 
 export const vessels = [
-  {
+  { 
     id: 1,
+    name: "M/V Dauphin Island",
+    lastUpdated: "2025-05-05 12:39",
+    tanks: [
+      // Pump System 1 (Tk 1-4 S/P)
+      { id: "Tk 1S", type: "LIQUID", capacity: 1710, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 1P", type: "LIQUID", capacity: 1712, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 2S", type: "LIQUID", capacity: 1713, currentLevel: 0, contents: "Empty", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 2P", type: "LIQUID", capacity: 1713, currentLevel: 0, contents: "Empty", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 3S", type: "LIQUID", capacity: 1781, currentLevel: 0, contents: "Water based mud", history: "Water based mud", lastCleaning: "08.02.2025", pressure: 2.1, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 3P", type: "LIQUID", capacity: 1781, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 1.9, client: "Stena IceMAX", pumpSystemId: 1 },
+      { id: "Tk 4S", type: "LIQUID", capacity: 1633, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "01.03.2025", pressure: 0, client: null, pumpSystemId: 1 },
+      { id: "Tk 4P", type: "LIQUID", capacity: 1633, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "01.03.2025", pressure: 0, client: null, pumpSystemId: 1 },
+
+      // Pump System 2 (Tk 5S/P)
+      { id: "Tk 5S", type: "LIQUID", capacity: 1140, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "15.03.2025", pressure: 0, client: null, pumpSystemId: 2 },
+      { id: "Tk 5P", type: "LIQUID", capacity: 1140, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "15.03.2025", pressure: 0, client: null, pumpSystemId: 2 },
+
+      // Pump System 3 (Tk 6S/P)
+      { id: "Tk 6S", type: "LIQUID", capacity: 1188, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "20.03.2025", pressure: 0, client: null, pumpSystemId: 3 },
+      { id: "Tk 6P", type: "LIQUID", capacity: 1188, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "20.03.2025", pressure: 0, client: null, pumpSystemId: 3 },
+      
+      // Pump System 4 (Methanol)
+      { id: "Meth 1S", type: "METHANOL", capacity: 506, currentLevel: 0, contents: "Empty", history: "Methanol", lastCleaning: "22.09.2021", pressure: 0, client: "Na Kika", pumpSystemId: 4 },
+      { id: "Meth 1P", type: "METHANOL", capacity: 506, currentLevel: 400, contents: "Methanol", history: "Methanol", lastCleaning: "22.09.2021", pressure: 2.0, client: "Na Kika", pumpSystemId: 4 },
+      { id: "Meth 2S", type: "METHANOL", capacity: 518, currentLevel: 0, contents: "Empty", history: "Methanol", lastCleaning: "22.09.2021", pressure: 0, client: "Na Kika", pumpSystemId: 4 },
+      { id: "Meth 2P", type: "METHANOL", capacity: 518, currentLevel: 400, contents: "Methanol", history: "Methanol", lastCleaning: "22.09.2021", pressure: 2.0, client: "Na Kika", pumpSystemId: 4 },
+      
+      // Slop Tank System (Slop)
+      { id: "Slop 1S", type: "SLOP", capacity: 990, currentLevel: 450, contents: "Trash Fluid", history: "Trash Fluid", lastCleaning: "04.09.2024", pressure: 1.8, client: null, pumpSystemId: 5 },
+      { id: "Slop 1P", type: "SLOP", capacity: 990, currentLevel: 600, contents: "Trash Fluid", history: "Trash Fluid", lastCleaning: "04.09.2024", pressure: 1.5, client: null, pumpSystemId: 5 },
+      
+      // Dry Bulk System (Dry Bulk - Total of 5 tanks)
+      { id: "Dry Bulk 1", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "cement", lastCleaning: "15.01.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 2", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "cement", lastCleaning: "08.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 3", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "barite", lastCleaning: "10.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 4", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "barite", lastCleaning: "12.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 5", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "bentonite", lastCleaning: "14.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+    ]
+  },
+  // Second vessel
+  { 
+    id: 2,
+    name: "M/V Ship Island",
+    lastUpdated: "2025-05-05 12:39",
+    tanks: [
+      // Pump System 1 (Tk 1-3 S/P)
+      { id: "Tk 1S", type: "LIQUID", capacity: 1710, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 1P", type: "LIQUID", capacity: 1712, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 2S", type: "LIQUID", capacity: 1713, currentLevel: 0, contents: "Empty", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 2P", type: "LIQUID", capacity: 1713, currentLevel: 0, contents: "Empty", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 0, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 3S", type: "LIQUID", capacity: 1781, currentLevel: 0, contents: "Water based mud", history: "Water based mud", lastCleaning: "08.02.2025", pressure: 2.1, client: "Deepwater Invictus", pumpSystemId: 1 },
+      { id: "Tk 3P", type: "LIQUID", capacity: 1781, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 1.9, client: "Stena IceMAX", pumpSystemId: 1 },
+
+      //Flowback System (Tk 4S/P)
+      { id: "Tk 4S", type: "LIQUID", capacity: 1633, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "01.03.2025", pressure: 0, client: null, pumpSystemId: 1 },
+      { id: "Tk 4P", type: "LIQUID", capacity: 1633, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "01.03.2025", pressure: 0, client: null, pumpSystemId: 1 },
+
+      // Pump System 2 (Tk 5S/P)
+      { id: "Tk 5S", type: "LIQUID", capacity: 1140, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "15.03.2025", pressure: 0, client: null, pumpSystemId: 2 },
+      { id: "Tk 5P", type: "LIQUID", capacity: 1140, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "15.03.2025", pressure: 0, client: null, pumpSystemId: 2 },
+
+      // Pump System 3 (Tk 6S/P)
+      { id: "Tk 6S", type: "LIQUID", capacity: 1188, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "20.03.2025", pressure: 0, client: null, pumpSystemId: 3 },
+      { id: "Tk 6P", type: "LIQUID", capacity: 1188, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "20.03.2025", pressure: 0, client: null, pumpSystemId: 3 },
+      
+      // Pump System 4 (Methanol)
+      { id: "Meth 1S", type: "METHANOL", capacity: 506, currentLevel: 0, contents: "Empty", history: "Methanol", lastCleaning: "22.09.2021", pressure: 0, client: "Na Kika", pumpSystemId: 4 },
+      { id: "Meth 1P", type: "METHANOL", capacity: 506, currentLevel: 400, contents: "Methanol", history: "Methanol", lastCleaning: "22.09.2021", pressure: 2.0, client: "Na Kika", pumpSystemId: 4 },
+      { id: "Meth 2S", type: "METHANOL", capacity: 518, currentLevel: 0, contents: "Empty", history: "Methanol", lastCleaning: "22.09.2021", pressure: 0, client: "Na Kika", pumpSystemId: 4 },
+      { id: "Meth 2P", type: "METHANOL", capacity: 518, currentLevel: 400, contents: "Methanol", history: "Methanol", lastCleaning: "22.09.2021", pressure: 2.0, client: "Na Kika", pumpSystemId: 4 },
+      
+      // Slop Tank System (Slop)
+      { id: "Slop 1S", type: "SLOP", capacity: 990, currentLevel: 450, contents: "Trash Fluid", history: "Trash Fluid", lastCleaning: "04.09.2024", pressure: 1.8, client: null, pumpSystemId: 5 },
+      { id: "Slop 1P", type: "SLOP", capacity: 990, currentLevel: 600, contents: "Trash Fluid", history: "Trash Fluid", lastCleaning: "04.09.2024", pressure: 1.5, client: null, pumpSystemId: 5 },
+      
+      // Dry Bulk System (Dry Bulk - Total of 4 tanks can be used out of  the 5 tanks)
+      { id: "Dry Bulk 1", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "cement", lastCleaning: "15.01.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 2", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "cement", lastCleaning: "08.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 3", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "barite", lastCleaning: "10.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 4", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "barite", lastCleaning: "12.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+      { id: "Dry Bulk 5", type: "DRY BULK", capacity: 0, currentLevel: 0, contents: "Empty- Out of Service", history: "bentonite", lastCleaning: "14.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
+    ]
+  },
+  // Third vessel
+  {
+    id: 3,
     name: "M/V Pelican Island",
     lastUpdated: "2025-05-05 12:39",
     tanks: [
@@ -40,7 +126,6 @@ export const vessels = [
       { id: "Dry Bulk 5", type: "DRY BULK", capacity: 2000, currentLevel: 0, contents: "Empty", history: "bentonite", lastCleaning: "14.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
     ]
   }
-  // M/V Gulf Carrier object has been removed
 ];
 
 export const clients = [
