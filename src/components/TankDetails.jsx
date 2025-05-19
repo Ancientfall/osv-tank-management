@@ -15,7 +15,7 @@ const TankDetails = ({ tank, pumpSystems, onClose, onHighlightPumpSystem }) => {
       case "METHANOL":
         return "Primarily for methanol storage. Requires special handling.";
       case "LIQUID":
-        return "Can contain various fluids including muds and brines.";
+        return "Can contain various fluids including muds and brines. Cannont contain any dry bulks";
       default:
         return "Standard tank with no special constraints.";
     }

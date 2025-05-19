@@ -1,65 +1,16 @@
-// This component displays the tank layout of a selected vessel, allowing users to select tanks for planning operations.
+// src/components/TankLayout.jsx
+
 import React from 'react';
-import { getStatusColor, getClientColor } from '../utils/uiHelpers.jsx';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { useFillLimit } from './FleetViewTab';
+import TankBlock from './TankBlock';
+import { getStatusColor } from '../utils/uiHelpers.jsx';
 
-const TankBlock = ({
-  tank,
-  planningMode,
-  selectedTanks,
-  highlightPumpSystem,
-  onClickTank
-}) => {
-  const isSelected = selectedTanks.includes(tank.id);
-  const isHighlighted = highlightPumpSystem !== null && tank.pumpSystemId === highlightPumpSystem;
-  const dimOthers = highlightPumpSystem !== null && !isHighlighted;
-
-  const levelPercent = Math.min(100, (tank.currentLevel / (tank.capacity || 1)) * 100);
-  const levelColor = levelPercent > 80 ? 'bg-red-600' :
-    tank.type === 'METHANOL' ? 'bg-purple-600' :
-    tank.type === 'SLOP' ? 'bg-yellow-600' :
-    'bg-green-600';
-
-  return (
-    <div
-      className={`${getStatusColor(tank)} p-1.5 rounded relative cursor-pointer hover:shadow-md transition-shadow
-        ${planningMode
-          ? isSelected
-            ? 'border-2 border-blue-500 ring-2 ring-blue-300'
-            : 'border border-gray-300'
-          : dimOthers
-            ? 'border border-gray-300 opacity-50'
-            : 'border border-gray-300'
-        }`}
-      onClick={() => onClickTank(tank.id)}
-      style={{
-        borderColor: planningMode && isSelected
-          ? 'rgb(59, 130, 246)'
-          : isHighlighted
-            ? `rgba(${tank.pumpSystemId * 40}, ${150 - tank.pumpSystemId * 10}, ${200 - tank.pumpSystemId * 20}, 0.8)`
-            : ''
-      }}
-    >
-      <div className="flex justify-between items-center text-xs font-bold">
-        <div>{tank.id}</div>
-        <div className="bg-blue-100 px-1 rounded text-blue-800">
-          {tank.pumpSystemId === 4 ? 'Methanol' :
-            tank.pumpSystemId === 5 ? 'Slop' :
-            tank.type === 'DRY BULK' ? 'Independent' :
-            `PS-${tank.pumpSystemId}`}
-        </div>
-      </div>
-      <div className="text-xs">{tank.capacity} bbl</div>
-      <div className="text-xs truncate">{tank.contents}</div>
-      {tank.client && (
-        <div className={`text-xs mt-1 ${getClientColor(tank.client)} px-1 py-0.5 rounded-sm text-center`}>
-          {tank.client.split(' ').pop()}
-        </div>
-      )}
-      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-        <div className={`h-1.5 rounded-full ${levelColor}`} style={{ width: `${levelPercent}%` }}></div>
-      </div>
-    </div>
-  );
+const TANK_UNIT_COLORS = {
+  bbl: '#34d399',
+  cuft: '#60a5fa',
+  methanol: '#a78bfa',
+  slop: '#facc15',
 };
 
 const TankLayout = ({
@@ -71,14 +22,43 @@ const TankLayout = ({
   onExpandTank,
   expandedTank
 }) => {
+  const fillLimit = useFillLimit();
+
   if (!selectedVessel) return null;
 
   const groupedTanks = {
-    LIQUID: selectedVessel.tanks.filter(t => t.type === "LIQUID"),
-    METHANOL: selectedVessel.tanks.filter(t => t.type === "METHANOL"),
-    SLOP: selectedVessel.tanks.filter(t => t.type === "SLOP"),
-    DRY_BULK: selectedVessel.tanks.filter(t => t.type === "DRY BULK"),
+    LIQUID: selectedVessel.tanks.filter(t => t.type === "LIQUID" && t.contents !== 'Out of Service'),
+    METHANOL: selectedVessel.tanks.filter(t => t.type === "METHANOL" && t.contents !== 'Out of Service'),
+    SLOP: selectedVessel.tanks.filter(t => t.type === "SLOP" && t.contents !== 'Out of Service'),
+    DRY_BULK: selectedVessel.tanks.filter(t => t.type === "DRY BULK" && t.contents !== 'Out of Service'),
   };
+
+  const pieData = [
+    {
+      name: 'Liquid Tanks',
+      value: groupedTanks.LIQUID.reduce((sum, t) => sum + t.capacity * fillLimit, 0),
+      unit: 'bbl',
+      fill: TANK_UNIT_COLORS.bbl
+    },
+    {
+      name: 'Methanol Tanks',
+      value: groupedTanks.METHANOL.reduce((sum, t) => sum + t.capacity * fillLimit, 0),
+      unit: 'bbl',
+      fill: TANK_UNIT_COLORS.methanol
+    },
+    {
+      name: 'Slop Tanks',
+      value: groupedTanks.SLOP.reduce((sum, t) => sum + t.capacity * fillLimit, 0),
+      unit: 'bbl',
+      fill: TANK_UNIT_COLORS.slop
+    },
+    {
+      name: 'Dry Bulk Tanks',
+      value: groupedTanks.DRY_BULK.reduce((sum, t) => sum + t.capacity, 0),
+      unit: 'cuft',
+      fill: TANK_UNIT_COLORS.cuft
+    }
+  ];
 
   const handleClickTank = (tankId) => {
     if (planningMode) {
@@ -90,6 +70,19 @@ const TankLayout = ({
     } else {
       onExpandTank(expandedTank === tankId ? null : tankId);
     }
+  };
+
+  const toggleOutOfService = (tankId) => {
+    const tank = selectedVessel.tanks.find(t => t.id === tankId);
+    if (tank) {
+      tank.contents = tank.contents === 'Out of Service' ? '' : 'Out of Service';
+    }
+  };
+
+  const resetOutOfServiceTanks = () => {
+    selectedVessel.tanks.forEach(t => {
+      if (t.contents === 'Out of Service') t.contents = '';
+    });
   };
 
   const renderPairedTanks = (typeLabel, tanks, prefix = '') => (
@@ -109,6 +102,7 @@ const TankLayout = ({
                 selectedTanks={selectedTanks}
                 highlightPumpSystem={highlightPumpSystem}
                 onClickTank={handleClickTank}
+                onToggleOutOfService={toggleOutOfService}
               />
             )}</div>
 
@@ -125,6 +119,7 @@ const TankLayout = ({
                 selectedTanks={selectedTanks}
                 highlightPumpSystem={highlightPumpSystem}
                 onClickTank={handleClickTank}
+                onToggleOutOfService={toggleOutOfService}
               />
             )}</div>
           </div>
@@ -135,7 +130,37 @@ const TankLayout = ({
 
   return (
     <div className="mb-6 bg-white border rounded-lg p-4 shadow-sm">
-      <h3 className="text-lg font-semibold mb-4">Tank Layout - {selectedVessel.name}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Tank Layout - {selectedVessel.name}</h3>
+        <button
+          onClick={resetOutOfServiceTanks}
+          className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition"
+        >
+          Reset Out-of-Service
+        </button>
+      </div>
+
+      <div className="mb-4 h-60">
+        <ResponsiveContainer>
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={70}
+              label={({ name, value, unit }) => `${Math.round(value)} ${unit}`}
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value, name, props) => [`${Math.round(value)} ${props.payload.unit}`, name]} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
       <div className="relative border-2 border-gray-300 rounded-lg p-6 bg-gray-50">
         <div className="absolute top-2 left-1/4 transform -translate-x-1/2 text-gray-600 font-medium">STARBOARD</div>
         <div className="absolute top-2 right-1/4 transform translate-x-1/2 text-gray-600 font-medium">PORTSIDE</div>
@@ -159,6 +184,7 @@ const TankLayout = ({
                   selectedTanks={selectedTanks}
                   highlightPumpSystem={highlightPumpSystem}
                   onClickTank={handleClickTank}
+                  onToggleOutOfService={toggleOutOfService}
                 />
               ))}
             </div>

@@ -1,3 +1,4 @@
+// This component allows the user to select a vessel from a dropdown and toggle planning mode.
 import React from 'react';
 
 const TankSelector = ({
@@ -44,4 +45,3 @@ const TankSelector = ({
 };
 
 export default TankSelector;
-// This component allows the user to select a vessel from a dropdown and toggle planning mode.
