@@ -1,4 +1,6 @@
+// This component allows the user to plan transfer operations by selecting tanks, adding notes, and managing transfer steps.
 import React from 'react';
+import toast from 'react-hot-toast';
 
 const PlanningControls = ({
   planningMode,
@@ -25,6 +27,7 @@ const PlanningControls = ({
       tanks: [...selectedTanks],
       note: currentStep.note
     }]);
+    toast.success(`Step ${transferSteps.length + 1} added`);
     setSelectedTanks([]);
     setCurrentStep({ tanks: [], note: "" });
   };
@@ -34,12 +37,14 @@ const PlanningControls = ({
     setCurrentStep(step);
     setSelectedTanks(step.tanks);
     setTransferSteps(prev => prev.filter((_, i) => i !== index));
+    toast(`Editing Step ${index + 1}`, { icon: '✏️' });
   };
 
   const handleDeleteStep = (index) => {
     setTransferSteps(prev => prev.filter((_, i) => i !== index));
+    toast.error(`Step ${index + 1} removed`);
   };
-
+  
   return (
     <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
       <h4 className="font-medium mb-3 flex items-center text-blue-800">
@@ -161,4 +166,3 @@ const PlanningControls = ({
 };
 
 export default PlanningControls;
-// This component allows the user to plan transfer operations by selecting tanks, adding notes, and managing transfer steps.1

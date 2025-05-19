@@ -1,5 +1,6 @@
-// This component displays a preview of the transfer plan with options to download or email it
+// This component displays a preview of the transfer plan with options to download or email it.
 import React from 'react';
+import toast from 'react-hot-toast';
 
 const TransferPlanner = ({ selectedVessel, transferSteps }) => {
   if (!transferSteps.length) return null;
@@ -31,6 +32,7 @@ const TransferPlanner = ({ selectedVessel, transferSteps }) => {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    toast.success('Transfer plan downloaded');
   };
 
   const handleEmailPlan = () => {
@@ -44,6 +46,7 @@ const TransferPlanner = ({ selectedVessel, transferSteps }) => {
 
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoLink);
+    toast.success('Email client opened');
   };
 
   return (
@@ -117,4 +120,3 @@ const TransferPlanner = ({ selectedVessel, transferSteps }) => {
 };
 
 export default TransferPlanner;
-// This component displays a preview of the transfer plan with options to download or email it.
