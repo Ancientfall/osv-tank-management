@@ -1,6 +1,6 @@
 // src/components/TankBlock.jsx
 import React from 'react';
-import { getStatusColor, getClientColor } from '../utils/uiHelpers.jsx';
+import { getStatusColor, getClientColor } from '../../utils/uiHelpers.jsx';
 
 const TankBlock = ({
   tank,

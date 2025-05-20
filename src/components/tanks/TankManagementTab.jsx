@@ -1,37 +1,45 @@
-// Note: The below code assumes that the components TankSelector, PumpSystemLegend, PlanningControls, TransferPlanner, TankLayout, TankDetails, and TankListTable are already defined and imported correctly.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TankSelector from './TankSelector';
-import PumpSystemLegend from './PumpSystemLegend';
-import PlanningControls from './PlanningControls';
-import TransferPlanner from './TransferPlanner';
+import PlanningControls from '../planner/PlanningControls';
+import TransferPlanner from '../planner/TransferPlanner';
+import PumpSystemLegend from '../legend/PumpSystemLegend';
 import TankLayout from './TankLayout';
 import TankDetails from './TankDetails';
 import TankListTable from './TankListTable';
 
-const TankManagementTab = ({
-  vessels,
-  selectedVessel,
-  onSetSelectedVessel,
-  expandedTank,
-  onSetExpandedTank
-}) => {
+const LOCAL_STORAGE_KEY = 'osv_transfer_steps';
+
+const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expandedTank, onSetExpandedTank }) => {
   if (!selectedVessel) return <div className="p-4">Please select a vessel.</div>;
 
   const [highlightPumpSystem, setHighlightPumpSystem] = useState(null);
   const [planningMode, setPlanningMode] = useState(false);
   const [selectedTanks, setSelectedTanks] = useState([]);
-  const [transferSteps, setTransferSteps] = useState([]);
+  const [transferSteps, setTransferSteps] = useState(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
   const [currentStep, setCurrentStep] = useState({ tanks: [], note: "" });
 
-  // Group tanks by pump system
-  const pumpSystems = {};
-  selectedVessel.tanks.forEach(tank => {
-    if (tank.type === "DRY BULK") return;
-    const pumpId = tank.pumpSystemId || 0;
-    if (!pumpSystems[pumpId]) pumpSystems[pumpId] = [];
-    pumpSystems[pumpId].push(tank);
-  });
-  const pumpSystemIds = Object.keys(pumpSystems).map(Number).sort((a, b) => a - b);
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(transferSteps));
+  }, [transferSteps]);
+
+  const handleAddStep = () => {
+    setTransferSteps(prev => [...prev, { tanks: [], note: "", volume: 0, fluidType: "" }]);
+  };
+
+  const handleRemoveStep = (index) => {
+    setTransferSteps(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditStep = (index, updatedStep) => {
+    setTransferSteps(prev => {
+      const updated = [...prev];
+      updated[index] = updatedStep;
+      return updated;
+    });
+  };
 
   return (
     <div className="p-4">
@@ -73,11 +81,20 @@ const TankManagementTab = ({
       <TransferPlanner
         selectedVessel={selectedVessel}
         transferSteps={transferSteps}
+        onRemoveStep={handleRemoveStep}
+        onEditStep={handleEditStep}
+        onAddStep={handleAddStep}
       />
 
       <PumpSystemLegend
-        pumpSystemIds={pumpSystemIds}
-        pumpSystems={pumpSystems}
+        pumpSystemIds={Array.from(new Set(selectedVessel.tanks.map(t => t.pumpSystemId).filter(Boolean))).sort((a, b) => a - b)}
+        pumpSystems={selectedVessel.tanks.reduce((acc, tank) => {
+          if (tank.type === "DRY BULK") return acc;
+          const id = tank.pumpSystemId || 0;
+          acc[id] = acc[id] || [];
+          acc[id].push(tank);
+          return acc;
+        }, {})}
         highlightPumpSystem={highlightPumpSystem}
         onHighlight={setHighlightPumpSystem}
       />
@@ -95,7 +112,7 @@ const TankManagementTab = ({
       {expandedTank && (
         <TankDetails
           tank={selectedVessel.tanks.find(t => t.id === expandedTank)}
-          pumpSystems={pumpSystems}
+          pumpSystems={{ compatibilityMatrix: {} }}
           onClose={() => onSetExpandedTank(null)}
           onHighlightPumpSystem={setHighlightPumpSystem}
         />
@@ -108,6 +125,7 @@ const TankManagementTab = ({
         expandedTank={expandedTank}
         onSelectTank={setSelectedTanks}
         onExpandTank={onSetExpandedTank}
+        compatibilityMatrix={{}} // Placeholder for now
       />
     </div>
   );
