@@ -1,8 +1,8 @@
-// src/components/FleetComparisonTab.jsx
+// src/components/FleetComparisonTab
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Package, Droplet, AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react'; // Relevant icons
-import { getCompatibilityColor, getCompatibilityIcon, getClientColor as getClientChipColor } from '../utils/uiHelpers.jsx';
+import { getCompatibilityColor, getCompatibilityIcon, getClientColor as getClientChipColor } from '../utils/uiHelpers';
 import { getCompatibilityLevel } from '../utils/compatibilityUtils';
 import { CHART_COLORS } from '../data/appData'; // Import chart colors
 

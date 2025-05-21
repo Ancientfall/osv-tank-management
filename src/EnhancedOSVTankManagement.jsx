@@ -1,4 +1,4 @@
-// src/EnhancedOSVTankManagement.jsx
+// src/EnhancedOSVTankManagement
 import React, { useState, useEffect } from 'react';
 import { Ship, Droplet, Layers } from 'lucide-react'; // Only icons needed for tabs here
 
@@ -8,7 +8,7 @@ import { compatibilityMatrix } from './utils/compatibilityUtils';
 
 // Import Tab Components
 import FleetViewTab from './components/FleetViewTab';
-import TankManagementTab from './components/TankManagementTab';
+import TankManagementTab from './components/tanks/TankManagementTab';
 import FleetComparisonTab from './components/FleetComparisonTab';
 
 const EnhancedOSVTankManagement = () => {

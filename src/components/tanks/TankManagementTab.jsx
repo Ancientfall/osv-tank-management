@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import TankSelector from './TankSelector';
-import PlanningControls from '../planner/PlanningControls';
-import TransferPlanner from '../planner/TransferPlanner';
-import PumpSystemLegend from '../legend/PumpSystemLegend';
-import TankLayout from './TankLayout';
-import TankDetails from './TankDetails';
-import TankListTable from './TankListTable';
+import TankSelector from '@/components/tanks/TankSelector';
+import PlanningControls from '@/components/planner/PlanningControls';
+import TransferPlanner from '@/components/planner/TransferPlanner';
+import PumpSystemLegend from '@/components/legend/PumpSystemLegend';
+import TankLayout from '@/components/tanks/TankLayout';
+import TankDetails from '@/components/tanks/TankDetails';
+import TankListTable from '@/components/tanks/TankListTable';
 
 const LOCAL_STORAGE_KEY = 'osv_transfer_steps';
 
-const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expandedTank, onSetExpandedTank }) => {
-  if (!selectedVessel) return <div className="p-4">Please select a vessel.</div>;
+const TankManagementTab = ({
+  vessels,
+  selectedVessel,
+  onSetSelectedVessel,
+  expandedTank,
+  onSetExpandedTank
+}) => {
+  if (!selectedVessel || !selectedVessel.tanks?.length) {
+    return <div className="p-4 text-gray-500 italic">No vessel or tank data available. Please select a valid vessel.</div>;
+  }
 
   const [highlightPumpSystem, setHighlightPumpSystem] = useState(null);
   const [planningMode, setPlanningMode] = useState(false);
@@ -25,21 +33,16 @@ const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expan
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(transferSteps));
   }, [transferSteps]);
 
-  const handleAddStep = () => {
-    setTransferSteps(prev => [...prev, { tanks: [], note: "", volume: 0, fluidType: "" }]);
-  };
+  const filteredTanks = selectedVessel.tanks.filter(t => t.type !== 'DRY BULK');
 
-  const handleRemoveStep = (index) => {
-    setTransferSteps(prev => prev.filter((_, i) => i !== index));
-  };
+  const pumpSystems = {};
+  filteredTanks.forEach((tank) => {
+    const pumpId = tank.pumpSystemId || 0;
+    if (!pumpSystems[pumpId]) pumpSystems[pumpId] = [];
+    pumpSystems[pumpId].push(tank);
+  });
 
-  const handleEditStep = (index, updatedStep) => {
-    setTransferSteps(prev => {
-      const updated = [...prev];
-      updated[index] = updatedStep;
-      return updated;
-    });
-  };
+  const pumpSystemIds = Object.keys(pumpSystems).map(Number).sort((a, b) => a - b);
 
   return (
     <div className="p-4">
@@ -49,7 +52,7 @@ const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expan
         vessels={vessels}
         selectedVesselId={selectedVessel.id}
         onChangeVessel={(vesselId) => {
-          const newVessel = vessels.find(v => v.id === vesselId);
+          const newVessel = vessels.find((v) => v.id === vesselId);
           if (newVessel) {
             onSetSelectedVessel(newVessel);
             onSetExpandedTank(null);
@@ -63,7 +66,7 @@ const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expan
         onResetPlanning={() => {
           setSelectedTanks([]);
           setTransferSteps([]);
-          setCurrentStep({ tanks: [], note: "" });
+          setCurrentStep({ tanks: [], note: '' });
         }}
       />
 
@@ -81,26 +84,28 @@ const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expan
       <TransferPlanner
         selectedVessel={selectedVessel}
         transferSteps={transferSteps}
-        onRemoveStep={handleRemoveStep}
-        onEditStep={handleEditStep}
-        onAddStep={handleAddStep}
+        onRemoveStep={(index) => setTransferSteps(prev => prev.filter((_, i) => i !== index))}
+        onEditStep={(index, updatedStep) => {
+          setTransferSteps(prev => {
+            const updated = [...prev];
+            updated[index] = updatedStep;
+            return updated;
+          });
+        }}
+        onAddStep={() => {
+          setTransferSteps(prev => [...prev, { tanks: [], note: '', volume: 0, fluidType: '' }]);
+        }}
       />
 
       <PumpSystemLegend
-        pumpSystemIds={Array.from(new Set(selectedVessel.tanks.map(t => t.pumpSystemId).filter(Boolean))).sort((a, b) => a - b)}
-        pumpSystems={selectedVessel.tanks.reduce((acc, tank) => {
-          if (tank.type === "DRY BULK") return acc;
-          const id = tank.pumpSystemId || 0;
-          acc[id] = acc[id] || [];
-          acc[id].push(tank);
-          return acc;
-        }, {})}
+        pumpSystemIds={pumpSystemIds}
+        pumpSystems={pumpSystems}
         highlightPumpSystem={highlightPumpSystem}
         onHighlight={setHighlightPumpSystem}
       />
 
       <TankLayout
-        selectedVessel={selectedVessel}
+        selectedVessel={{ ...selectedVessel, tanks: filteredTanks }}
         planningMode={planningMode}
         selectedTanks={selectedTanks}
         highlightPumpSystem={highlightPumpSystem}
@@ -111,21 +116,21 @@ const TankManagementTab = ({ vessels, selectedVessel, onSetSelectedVessel, expan
 
       {expandedTank && (
         <TankDetails
-          tank={selectedVessel.tanks.find(t => t.id === expandedTank)}
-          pumpSystems={{ compatibilityMatrix: {} }}
+          tank={filteredTanks.find((t) => t.id === expandedTank)}
+          pumpSystems={pumpSystems}
           onClose={() => onSetExpandedTank(null)}
           onHighlightPumpSystem={setHighlightPumpSystem}
         />
       )}
 
       <TankListTable
-        tanks={selectedVessel.tanks}
+        tanks={filteredTanks}
         planningMode={planningMode}
         selectedTanks={selectedTanks}
         expandedTank={expandedTank}
         onSelectTank={setSelectedTanks}
         onExpandTank={onSetExpandedTank}
-        compatibilityMatrix={{}} // Placeholder for now
+        compatibilityMatrix={{}}
       />
     </div>
   );

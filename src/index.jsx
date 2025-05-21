@@ -1,4 +1,4 @@
-// /root/osv-tank-manager/src/index.jsx
+// /root/osv-tank-manager/src/index
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
