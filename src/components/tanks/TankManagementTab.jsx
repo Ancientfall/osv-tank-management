@@ -5,7 +5,6 @@ import TransferPlanner from '@/components/planner/TransferPlanner';
 import PumpSystemLegend from '@/components/legend/PumpSystemLegend';
 import TankLayout from '@/components/tanks/TankLayout';
 import TankDetails from '@/components/tanks/TankDetails';
-import TankListTable from '@/components/tanks/TankListTable';
 
 const LOCAL_STORAGE_KEY = 'osv_transfer_steps';
 
@@ -46,7 +45,7 @@ const TankManagementTab = ({
 
   return (
     <div className="p-4">
-      <h2 className="text-xl mb-4">Tank Management</h2>
+      <h2 className="text-xl mb-4 font-semibold text-gray-800">Tank Management</h2>
 
       <TankSelector
         vessels={vessels}
@@ -122,16 +121,6 @@ const TankManagementTab = ({
           onHighlightPumpSystem={setHighlightPumpSystem}
         />
       )}
-
-      <TankListTable
-        tanks={filteredTanks}
-        planningMode={planningMode}
-        selectedTanks={selectedTanks}
-        expandedTank={expandedTank}
-        onSelectTank={setSelectedTanks}
-        onExpandTank={onSetExpandedTank}
-        compatibilityMatrix={{}}
-      />
     </div>
   );
 };

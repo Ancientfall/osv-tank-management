@@ -13,33 +13,30 @@ import FleetComparisonTab from './components/FleetComparisonTab';
 
 const EnhancedOSVTankManagement = () => {
   const [activeTab, setActiveTab] = useState(0);
-  
-  // Keep original data immutable, pass it down.
-  // If data were to be modified (e.g., CRUD operations), you'd use useState for them.
+
   const [vessels, setVessels] = useState(initialVesselsData);
   const [clients, setClients] = useState(initialClientsData);
   const [fluidTypes, setFluidTypes] = useState(initialFluidTypesData);
 
-  const [selectedVessel, setSelectedVessel] = useState(vessels[0]); // Initialize with the first vessel
+  const [selectedVessel, setSelectedVessel] = useState(vessels[0]);
   const [expandedTank, setExpandedTank] = useState(null);
 
-  // Handler to change vessel and switch to Tank Management tab
   const handleSelectVesselForManagement = (vessel) => {
     setSelectedVessel(vessel);
-    setExpandedTank(null); // Reset expanded tank when vessel changes
+    setExpandedTank(null);
     setActiveTab(1);
   };
-  
+
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      <header className="bg-blue-600 text-white p-4">
-        <h1 className="text-2xl font-bold">OSV Tank Management System</h1>
+    <div className="flex flex-col h-screen bg-eco-white">
+      <header className="bg-eco-navy text-eco-white p-4">
+        <h1 className="text-2xl font-bold">ECO OSV Tank Management System</h1>
       </header>
-      
+
       <div className="flex-1 overflow-auto">
-        <div className="flex bg-gray-200 border-b border-gray-300">
-          <button 
-            className={`px-6 py-3 focus:outline-none ${activeTab === 0 ? 'bg-white text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-300'}`}
+        <div className="flex bg-eco-white border-b border-eco-navy">
+          <button
+            className={`px-6 py-3 focus:outline-none ${activeTab === 0 ? 'bg-eco-white text-eco-navy font-semibold border-b-4 border-eco-orange' : 'text-eco-navy hover:bg-eco-orange/10'}`}
             onClick={() => setActiveTab(0)}
           >
             <div className="flex items-center space-x-2">
@@ -47,8 +44,8 @@ const EnhancedOSVTankManagement = () => {
               <span>Fleet View</span>
             </div>
           </button>
-          <button 
-            className={`px-6 py-3 focus:outline-none ${activeTab === 1 ? 'bg-white text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-300'}`}
+          <button
+            className={`px-6 py-3 focus:outline-none ${activeTab === 1 ? 'bg-eco-white text-eco-navy font-semibold border-b-4 border-eco-orange' : 'text-eco-navy hover:bg-eco-orange/10'}`}
             onClick={() => setActiveTab(1)}
           >
             <div className="flex items-center space-x-2">
@@ -56,8 +53,8 @@ const EnhancedOSVTankManagement = () => {
               <span>Tank Management</span>
             </div>
           </button>
-          <button 
-            className={`px-6 py-3 focus:outline-none ${activeTab === 2 ? 'bg-white text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-300'}`}
+          <button
+            className={`px-6 py-3 focus:outline-none ${activeTab === 2 ? 'bg-eco-white text-eco-navy font-semibold border-b-4 border-eco-orange' : 'text-eco-navy hover:bg-eco-orange/10'}`}
             onClick={() => setActiveTab(2)}
           >
             <div className="flex items-center space-x-2">
@@ -66,7 +63,7 @@ const EnhancedOSVTankManagement = () => {
             </div>
           </button>
         </div>
-        
+
         <div className="tab-content">
           {activeTab === 0 && (
             <FleetViewTab
@@ -74,7 +71,7 @@ const EnhancedOSVTankManagement = () => {
               onSelectVessel={handleSelectVesselForManagement}
             />
           )}
-          
+
           {activeTab === 1 && (
             <TankManagementTab
               vessels={vessels}
@@ -84,12 +81,12 @@ const EnhancedOSVTankManagement = () => {
               onSetExpandedTank={setExpandedTank}
             />
           )}
-          
+
           {activeTab === 2 && (
             <FleetComparisonTab
               vessels={vessels}
               clients={clients}
-              fluidTypes={fluidTypes} // Pass fluidTypes if needed for filters/display
+              fluidTypes={fluidTypes}
               compatibilityMatrix={compatibilityMatrix}
             />
           )}
