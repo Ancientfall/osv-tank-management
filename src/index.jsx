@@ -1,14 +1,14 @@
-// /root/osv-tank-manager/src/index
-
+// src/index.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import EnhancedOSVTankManagement from './EnhancedOSVTankManagement';
+import EnhancedOSVTankManagement from './components/EnhancedOSVTankManagement';
 import './index.css';
 
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
     <React.StrictMode>
       <EnhancedOSVTankManagement />
     </React.StrictMode>

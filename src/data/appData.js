@@ -5,6 +5,7 @@ export const vessels = [
     id: 1,
     name: "M/V Dauphin Island",
     lastUpdated: "2025-05-05 12:39",
+    bestCandidate: true, // Added this property
     tanks: [
       // Pump System 1 (Tk 1-4 S/P)
       { id: "Tk 1S", type: "LIQUID", capacity: 1710, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
@@ -47,6 +48,7 @@ export const vessels = [
     id: 2,
     name: "M/V Ship Island",
     lastUpdated: "2025-05-05 12:39",
+    bestCandidate: false, // Added this property
     tanks: [
       // Pump System 1 (Tk 1-3 S/P)
       { id: "Tk 1S", type: "LIQUID", capacity: 1710, currentLevel: 0, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
@@ -91,6 +93,7 @@ export const vessels = [
     id: 3,
     name: "M/V Pelican Island",
     lastUpdated: "2025-05-05 12:39",
+    bestCandidate: false, // Added this property
     tanks: [
       // Pump System 1 (Tk 1-4 S/P)
       { id: "Tk 1S", type: "LIQUID", capacity: 1540, currentLevel: 800, contents: "Liquid Mud", history: "Liquid Mud", lastCleaning: "08.02.2025", pressure: 2.0, client: "Deepwater Invictus", pumpSystemId: 1 },
@@ -135,7 +138,6 @@ export const clients = [
 ];
 
 export const fluidTypes = [
-  // ... (fluidTypes data remains the same)
   { id: "mi_rheliant", name: "M-I SWACO SBM - RHELIANT", color: "#8884d8", type: "SBM" },
   { id: "mi_rheguard", name: "M-I SWACO SBM - RHEGUARD", color: "#7a67ee", type: "SBM" },
   { id: "mi_premix", name: "M-I SWACO - Pre-Mix", color: "#6b46fa", type: "SBM" },
