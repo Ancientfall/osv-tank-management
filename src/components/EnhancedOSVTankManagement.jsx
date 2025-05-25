@@ -13,12 +13,18 @@ const EnhancedOSVTankManagement = () => {
   // Add error handling for vessels data
   if (!vessels || !Array.isArray(vessels) || vessels.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Data Loading Error</h2>
-          <p className="text-gray-600 mb-4">Unable to load vessel data. Please check your data file.</p>
-          <div className="text-sm text-gray-500">
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f8fafc',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', marginBottom: '0.5rem' }}>Data Loading Error</h2>
+          <p style={{ color: '#6b7280', marginBottom: '1rem' }}>Unable to load vessel data. Please check your data file.</p>
+          <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>
             Expected: Array of vessels from ../data/appData.js<br/>
             Received: {vessels ? typeof vessels : 'undefined'}
           </div>
@@ -55,25 +61,61 @@ const EnhancedOSVTankManagement = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Enhanced Navigation Header */}
-      <div className="bg-white shadow-lg border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+      <div style={{
+        backgroundColor: 'white',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '1.5rem 0'
+          }}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <span className="mr-3 text-4xl">⚓</span>
+              <h1 style={{
+                fontSize: '2rem',
+                fontWeight: 'bold',
+                color: '#111827',
+                display: 'flex',
+                alignItems: 'center',
+                margin: 0
+              }}>
+                <span style={{ marginRight: '0.75rem', fontSize: '2.5rem' }}>⚓</span>
                 OSV Tank Management System
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p style={{
+                color: '#6b7280',
+                marginTop: '0.25rem',
+                margin: 0
+              }}>
                 Comprehensive fleet and tank management solution
               </p>
               {selectedVessel && (
-                <div className="mt-2 flex items-center space-x-4 text-sm">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium">
+                <div style={{
+                  marginTop: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  fontSize: '0.875rem'
+                }}>
+                  <span style={{
+                    backgroundColor: '#dbeafe',
+                    color: '#1d4ed8',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '0.375rem',
+                    fontWeight: '500'
+                  }}>
                     Active Vessel: {selectedVessel.name}
                   </span>
-                  <span className="text-gray-500">
+                  <span style={{ color: '#9ca3af' }}>
                     Last Updated: {selectedVessel.lastUpdated}
                   </span>
                 </div>
@@ -81,22 +123,44 @@ const EnhancedOSVTankManagement = () => {
             </div>
             
             {/* Enhanced Tab Navigation */}
-            <nav className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            <nav style={{
+              display: 'flex',
+              gap: '0.25rem',
+              backgroundColor: '#f3f4f6',
+              padding: '0.25rem',
+              borderRadius: '0.5rem'
+            }}>
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
-                    activeTab === tab.id
-                      ? 'bg-white text-blue-700 shadow-md ring-1 ring-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-white hover:shadow-sm'
-                  }`}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    backgroundColor: activeTab === tab.id ? 'white' : 'transparent',
+                    color: activeTab === tab.id ? '#1d4ed8' : '#6b7280',
+                    boxShadow: activeTab === tab.id ? '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' : 'none'
+                  }}
                   title={tab.description}
                 >
-                  <span className="text-lg">{tab.icon}</span>
+                  <span style={{ fontSize: '1.125rem' }}>{tab.icon}</span>
                   <span>{tab.label}</span>
                   {activeTab === tab.id && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div style={{
+                      width: '0.5rem',
+                      height: '0.5rem',
+                      backgroundColor: '#3b82f6',
+                      borderRadius: '50%',
+                      animation: 'pulse 2s infinite'
+                    }}></div>
                   )}
                 </button>
               ))}
@@ -104,16 +168,31 @@ const EnhancedOSVTankManagement = () => {
           </div>
           
           {/* Tab Description Bar */}
-          <div className="pb-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-blue-600 text-lg">
+          <div style={{ paddingBottom: '1rem' }}>
+            <div style={{
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span style={{
+                  color: '#2563eb',
+                  fontSize: '1.125rem'
+                }}>
                   {tabs.find(tab => tab.id === activeTab)?.icon}
                 </span>
-                <span className="text-blue-800 font-medium">
+                <span style={{
+                  color: '#1e40af',
+                  fontWeight: '500'
+                }}>
                   {tabs.find(tab => tab.id === activeTab)?.label}:
                 </span>
-                <span className="text-blue-700">
+                <span style={{ color: '#1d4ed8' }}>
                   {tabs.find(tab => tab.id === activeTab)?.description}
                 </span>
               </div>
@@ -123,9 +202,9 @@ const EnhancedOSVTankManagement = () => {
       </div>
 
       {/* Enhanced Tab Content */}
-      <div className="max-w-7xl mx-auto">
+      <div style={{ maxWidth: '80rem', margin: '0 auto' }}>
         {activeTab === 'fleet-view' && (
-          <div className="animate-fadeIn">
+          <div>
             <FleetViewTab
               vessels={vessels}
               onSelectVessel={handleSelectVessel}
@@ -134,7 +213,7 @@ const EnhancedOSVTankManagement = () => {
         )}
         
         {activeTab === 'tank-management' && (
-          <div className="animate-fadeIn">
+          <div>
             {selectedVessel ? (
               <TankManagementTab
                 vessels={vessels}
@@ -144,18 +223,40 @@ const EnhancedOSVTankManagement = () => {
                 onSetExpandedTank={setExpandedTank}
               />
             ) : (
-              <div className="p-8 text-center">
-                <div className="max-w-md mx-auto">
-                  <div className="text-6xl mb-4">🚢</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <div style={{
+                padding: '2rem',
+                textAlign: 'center'
+              }}>
+                <div style={{ maxWidth: '28rem', margin: '0 auto' }}>
+                  <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚢</div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    color: '#111827',
+                    marginBottom: '0.5rem'
+                  }}>
                     No Vessel Selected
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p style={{
+                    color: '#6b7280',
+                    marginBottom: '1.5rem'
+                  }}>
                     Please select a vessel from the Fleet Overview to manage its tanks.
                   </p>
                   <button
                     onClick={() => setActiveTab('fleet-view')}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    style={{
+                      backgroundColor: '#2563eb',
+                      color: 'white',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '0.5rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
                   >
                     Go to Fleet Overview
                   </button>
@@ -166,99 +267,94 @@ const EnhancedOSVTankManagement = () => {
         )}
         
         {activeTab === 'kpi-reporting' && (
-          <div className="animate-fadeIn">
-            {/* Temporary fallback for KPI Dashboard */}
-            <div className="p-6 bg-gray-50 min-h-screen">
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">KPI Dashboard</h1>
-                <p className="text-gray-600">Fleet performance metrics and analytics</p>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-sm border p-6">
-                <h2 className="text-xl font-semibold mb-4">Fleet Overview</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{vessels.length}</div>
-                    <div className="text-blue-700">Total Vessels</div>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {vessels.reduce((sum, v) => sum + v.tanks.length, 0)}
-                    </div>
-                    <div className="text-green-700">Total Tanks</div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {vessels.reduce((sum, v) => sum + v.tanks.reduce((tankSum, t) => tankSum + t.capacity, 0), 0).toLocaleString()}
-                    </div>
-                    <div className="text-purple-700">Total Capacity (bbl)</div>
-                  </div>
-                </div>
-                
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-3">Vessel List</h3>
-                  <div className="space-y-2">
-                    {vessels.map(vessel => (
-                      <div key={vessel.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                        <span className="font-medium">{vessel.name}</span>
-                        <span className="text-sm text-gray-600">{vessel.tanks.length} tanks</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div>
+            <KPIReportingTab vessels={vessels} />
           </div>
         )}
       </div>
 
       {/* Enhanced Status Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-green-600 font-medium">System Online</span>
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        borderTop: '1px solid #e5e7eb',
+        boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06)'
+      }}>
+        <div style={{
+          maxWidth: '80rem',
+          margin: '0 auto',
+          padding: '0.75rem 1rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '0.875rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1.5rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <div style={{
+                  width: '0.5rem',
+                  height: '0.5rem',
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%',
+                  animation: 'pulse 2s infinite'
+                }}></div>
+                <span style={{ color: '#059669', fontWeight: '500' }}>System Online</span>
               </div>
               
-              <div className="text-gray-600">
+              <div style={{ color: '#6b7280' }}>
                 Fleet Status: 
-                <span className="font-medium text-gray-900 ml-1">
+                <span style={{ fontWeight: '500', color: '#111827', marginLeft: '0.25rem' }}>
                   {vessels.length} vessels active
                 </span>
               </div>
               
               {selectedVessel && (
-                <div className="text-gray-600">
+                <div style={{ color: '#6b7280' }}>
                   Current Vessel: 
-                  <span className="font-medium text-gray-900 ml-1">
+                  <span style={{ fontWeight: '500', color: '#111827', marginLeft: '0.25rem' }}>
                     {selectedVessel.name}
                   </span>
                 </div>
               )}
             </div>
             
-            <div className="flex items-center space-x-6">
-              <div className="text-gray-600">
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1.5rem'
+            }}>
+              <div style={{ color: '#6b7280' }}>
                 Active Tab: 
-                <span className="font-medium text-gray-900 ml-1">
+                <span style={{ fontWeight: '500', color: '#111827', marginLeft: '0.25rem' }}>
                   {tabs.find(tab => tab.id === activeTab)?.label}
                 </span>
               </div>
               
-              <div className="text-gray-600">
+              <div style={{ color: '#6b7280' }}>
                 Total Capacity: 
-                <span className="font-medium text-blue-600 ml-1">
+                <span style={{ fontWeight: '500', color: '#2563eb', marginLeft: '0.25rem' }}>
                   {vessels.reduce((total, vessel) => 
                     total + vessel.tanks.reduce((sum, tank) => sum + tank.capacity, 0), 0
                   ).toLocaleString()} bbl
                 </span>
               </div>
               
-              <div className="text-gray-600">
+              <div style={{ color: '#6b7280' }}>
                 Available: 
-                <span className="font-medium text-green-600 ml-1">
+                <span style={{ fontWeight: '500', color: '#059669', marginLeft: '0.25rem' }}>
                   {vessels.reduce((total, vessel) => 
                     total + vessel.tanks.reduce((sum, tank) => sum + (tank.capacity - tank.currentLevel), 0), 0
                   ).toLocaleString()} bbl
@@ -270,7 +366,19 @@ const EnhancedOSVTankManagement = () => {
       </div>
 
       {/* Add some padding to account for fixed status bar */}
-      <div className="h-16"></div>
+      <div style={{ height: '4rem' }}></div>
+
+      {/* Add CSS animations */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: .5;
+          }
+        }
+      `}</style>
     </div>
   );
 };

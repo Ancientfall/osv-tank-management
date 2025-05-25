@@ -14,7 +14,8 @@ import {
   Filter,
   Eye,
   Settings,
-  Info
+  Info,
+  X
 } from 'lucide-react';
 import { getStatusColor, getClientColor } from '../utils/uiHelpers.jsx';
 import { getCompatibilityLevel } from '../utils/compatibilityUtils';
@@ -103,6 +104,19 @@ const FleetViewTab = ({ vessels, onSelectVessel }) => {
     return 'bbl';
   };
 
+  // Clear the best candidate selection for a vessel
+  const clearBestCandidate = (vesselId) => {
+    if (onSelectVessel) {
+      const updatedVessel = vessels.find(v => v.id === vesselId);
+      if (updatedVessel) {
+        onSelectVessel({
+          ...updatedVessel,
+          bestCandidate: false
+        });
+      }
+    }
+  };
+
   // Calculate vessel statistics with fluid-specific compatibility
   const vesselStats = useMemo(() => {
     return vessels.map(vessel => {
@@ -118,17 +132,61 @@ const FleetViewTab = ({ vessels, onSelectVessel }) => {
         ? vessel.tanks.filter(tank => !compatibleTankTypes.includes(tank.type))
         : [];
 
-      // Calculate capacity metrics only for compatible tanks
-      const totalCapacity = compatibleTanks.reduce((sum, tank) => sum + tank.capacity, 0);
-      const usedCapacity = compatibleTanks.reduce((sum, tank) => sum + tank.currentLevel, 0);
-      const availableCapacity = totalCapacity - usedCapacity;
-      const utilizationPercentage = totalCapacity > 0 ? Math.round((usedCapacity / totalCapacity) * 100) : 0;
-      
-      // Count tanks by type
-      const liquidTanks = vessel.tanks.filter(t => t.type === 'LIQUID');
-      const methanolTanks = vessel.tanks.filter(t => t.type === 'METHANOL');
-      const slopTanks = vessel.tanks.filter(t => t.type === 'SLOP');
-      const dryBulkTanks = vessel.tanks.filter(t => t.type === 'DRY BULK');
+      // Calculate capacity metrics based on tank type
+      const liquidMudTanks = vessel.tanks.filter(t => t.type === 'LIQUID');
+      const methanolTanks = vessel.tanks.filter(t => t.type === 'METHANOL' && t.capacity > 0);
+      const slopTanks = vessel.tanks.filter(t => t.type === 'SLOP' && t.capacity > 0);
+      const dryBulkTanks = vessel.tanks.filter(t => t.type === 'DRY BULK' && t.capacity > 0);
+
+      // For Liquid Mud tanks, calculate capacity at 80% max
+      const liquidMudTotalCapacity = liquidMudTanks.reduce((sum, tank) => sum + tank.capacity, 0);
+      const liquidMudEffectiveCapacity = Math.floor(liquidMudTotalCapacity * 0.8); // 80% capacity cap
+      const liquidMudUsedCapacity = liquidMudTanks.reduce((sum, tank) => sum + tank.currentLevel, 0);
+      const liquidMudAvailableCapacity = Math.max(0, liquidMudEffectiveCapacity - liquidMudUsedCapacity);
+      const liquidMudUtilizationPercentage = liquidMudEffectiveCapacity > 0 
+        ? Math.round((liquidMudUsedCapacity / liquidMudEffectiveCapacity) * 100) 
+        : 0;
+
+      // For Methanol tanks
+      const methanolTotalCapacity = methanolTanks.reduce((sum, tank) => sum + tank.capacity, 0);
+      const methanolUsedCapacity = methanolTanks.reduce((sum, tank) => sum + tank.currentLevel, 0);
+      const methanolAvailableCapacity = Math.max(0, methanolTotalCapacity - methanolUsedCapacity);
+      const methanolUtilizationPercentage = methanolTotalCapacity > 0 
+        ? Math.round((methanolUsedCapacity / methanolTotalCapacity) * 100) 
+        : 0;
+
+      // For Slop tanks
+      const slopTotalCapacity = slopTanks.reduce((sum, tank) => sum + tank.capacity, 0);
+      const slopUsedCapacity = slopTanks.reduce((sum, tank) => sum + tank.currentLevel, 0);
+      const slopAvailableCapacity = Math.max(0, slopTotalCapacity - slopUsedCapacity);
+      const slopUtilizationPercentage = slopTotalCapacity > 0 
+        ? Math.round((slopUsedCapacity / slopTotalCapacity) * 100) 
+        : 0;
+
+      // For Dry Bulk tanks
+      const dryBulkTotalCapacity = dryBulkTanks.reduce((sum, tank) => sum + tank.capacity, 0);
+      const dryBulkUsedCapacity = dryBulkTanks.reduce((sum, tank) => sum + tank.currentLevel, 0);
+      const dryBulkAvailableCapacity = Math.max(0, dryBulkTotalCapacity - dryBulkUsedCapacity);
+      const dryBulkUtilizationPercentage = dryBulkTotalCapacity > 0 
+        ? Math.round((dryBulkUsedCapacity / dryBulkTotalCapacity) * 100) 
+        : 0;
+
+      // Set the actual capacity based on the selected fluid
+      let totalCapacity, usedCapacity, availableCapacity, utilizationPercentage;
+
+      if (selectedFluid) {
+        // If a fluid is selected, use the standard calculation based on compatible tanks
+        totalCapacity = compatibleTanks.reduce((sum, tank) => sum + tank.capacity, 0);
+        usedCapacity = compatibleTanks.reduce((sum, tank) => sum + tank.currentLevel, 0);
+        availableCapacity = totalCapacity - usedCapacity;
+        utilizationPercentage = totalCapacity > 0 ? Math.round((usedCapacity / totalCapacity) * 100) : 0;
+      } else {
+        // If no fluid is selected, only use Liquid Mud tanks at 80% capacity
+        totalCapacity = liquidMudTotalCapacity;
+        usedCapacity = liquidMudUsedCapacity;
+        availableCapacity = liquidMudAvailableCapacity;
+        utilizationPercentage = liquidMudUtilizationPercentage;
+      }
       
       // Calculate detailed compatibility if fluid is selected
       let fluidCompatibleTanks = 0;
@@ -168,10 +226,27 @@ const FleetViewTab = ({ vessels, onSelectVessel }) => {
         usedCapacity,
         availableCapacity,
         utilizationPercentage,
-        liquidTanks: liquidTanks.length,
+        liquidMudTanks: liquidMudTanks.length,
         methanolTanks: methanolTanks.length,
         slopTanks: slopTanks.length,
         dryBulkTanks: dryBulkTanks.length,
+        liquidMudTotalCapacity,
+        liquidMudEffectiveCapacity,
+        liquidMudUsedCapacity,
+        liquidMudAvailableCapacity,
+        liquidMudUtilizationPercentage,
+        methanolTotalCapacity,
+        methanolUsedCapacity,
+        methanolAvailableCapacity,
+        methanolUtilizationPercentage,
+        slopTotalCapacity,
+        slopUsedCapacity,
+        slopAvailableCapacity,
+        slopUtilizationPercentage,
+        dryBulkTotalCapacity,
+        dryBulkUsedCapacity,
+        dryBulkAvailableCapacity,
+        dryBulkUtilizationPercentage,
         compatibleTanks,
         incompatibleTanks,
         fluidCompatibleTanks,
@@ -228,357 +303,387 @@ const FleetViewTab = ({ vessels, onSelectVessel }) => {
     }
   }, [vesselStats, sortBy, filterBy, selectedFluid]);
 
-  const VesselCard = ({ vessel }) => (
-    <div className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 ${
-      vessel.isTagged ? 'border-orange-300 bg-gradient-to-br from-orange-50 to-white' : 'border-gray-200 hover:border-blue-300'
-    } overflow-hidden group ${
-      selectedFluid && vessel.availableCapacity === 0 ? 'opacity-60' : ''
-    }`}>
-      {/* Header */}
-      <div className={`px-6 py-4 ${
-        vessel.isTagged 
-          ? 'bg-gradient-to-r from-orange-500 to-orange-600' 
-          : 'bg-gradient-to-r from-blue-600 to-blue-700'
-      } text-white relative`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-white bg-opacity-20 rounded-lg">
-              <Ship size={24} />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold">{vessel.name}</h3>
-              <p className="text-sm opacity-90">
-                Last updated: {vessel.lastUpdated}
-              </p>
-            </div>
-          </div>
-          
-          {vessel.isTagged && (
-            <div className="flex items-center space-x-1 bg-white bg-opacity-20 px-3 py-1 rounded-full">
-              <Star size={16} fill="currentColor" />
-              <span className="text-sm font-medium">Best Candidate</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Fluid-Specific Capacity Overview */}
-      <div className="px-6 py-4 bg-gray-50">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="font-semibold text-gray-800 flex items-center">
-            <BarChart3 size={18} className="mr-2 text-blue-600" />
-            {selectedFluid ? `${selectedFluid} Capacity` : 'Total Capacity Overview'}
-          </h4>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            vessel.utilizationPercentage > 80 
-              ? 'bg-red-100 text-red-700' 
-              : vessel.utilizationPercentage > 60
-                ? 'bg-yellow-100 text-yellow-700'
-                : 'bg-green-100 text-green-700'
-          }`}>
-            {vessel.utilizationPercentage}% Utilized
-          </span>
-        </div>
-        
-        {selectedFluid && vessel.totalCapacity === 0 ? (
-          <div className="text-center py-4 bg-red-50 border border-red-200 rounded-lg">
-            <AlertTriangle size={24} className="mx-auto text-red-500 mb-2" />
-            <p className="text-red-700 font-medium">No Compatible Tanks</p>
-            <p className="text-red-600 text-sm">This vessel has no tanks suitable for {selectedFluid}</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-3 gap-4 mb-3">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{vessel.totalCapacity.toLocaleString()}</div>
-                <div className="text-sm text-gray-600">Total Capacity</div>
-                <div className="text-xs text-gray-500">{vessel.fluidUnit}</div>
+  const VesselCard = ({ vessel }) => {
+    // Get the color scheme based on vessel
+    const getVesselColorScheme = () => {
+      if (vessel.name.includes('Dauphin')) {
+        return {
+          bg: 'bg-orange-500',
+          gradientFrom: 'from-orange-500',
+          gradientTo: 'to-orange-600',
+          highlight: 'bg-orange-100',
+          text: 'text-orange-600',
+          border: 'border-orange-300',
+          cardBg: 'from-orange-50'
+        };
+      } else {
+        return {
+          bg: 'bg-blue-600',
+          gradientFrom: 'from-blue-600',
+          gradientTo: 'to-blue-700',
+          highlight: 'bg-blue-100',
+          text: 'text-blue-600',
+          border: 'border-blue-300',
+          cardBg: 'from-blue-50'
+        };
+      }
+    };
+    
+    const colorScheme = getVesselColorScheme();
+    
+    return (
+      <div className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 ${
+        vessel.isTagged ? `border-orange-300 bg-gradient-to-br ${colorScheme.cardBg} to-white` : 'border-gray-200 hover:border-blue-300'
+      } overflow-hidden group ${
+        selectedFluid && vessel.availableCapacity === 0 ? 'opacity-60' : ''
+      }`}>
+        {/* Header */}
+        <div className={`px-6 py-4 ${
+          vessel.isTagged 
+            ? 'bg-gradient-to-r from-orange-500 to-orange-600' 
+            : 'bg-gradient-to-r from-blue-600 to-blue-700'
+        } text-white relative`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                <Ship size={24} />
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{vessel.availableCapacity.toLocaleString()}</div>
-                <div className="text-sm text-gray-600">Available</div>
-                <div className="text-xs text-gray-500">{vessel.fluidUnit}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">{vessel.usedCapacity.toLocaleString()}</div>
-                <div className="text-sm text-gray-600">Used</div>
-                <div className="text-xs text-gray-500">{vessel.fluidUnit}</div>
+              <div>
+                <h3 className="text-xl font-bold">{vessel.name}</h3>
+                <p className="text-sm opacity-90">
+                  Last updated: {vessel.lastUpdated}
+                </p>
               </div>
             </div>
             
-            {/* Capacity Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div className="flex h-full">
-                <div 
-                  className="bg-orange-500 transition-all duration-500"
-                  style={{ width: `${vessel.utilizationPercentage}%` }}
-                ></div>
-                <div 
-                  className="bg-green-500 transition-all duration-500"
-                  style={{ width: `${100 - vessel.utilizationPercentage}%` }}
-                ></div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Tank Breakdown - Show compatibility status */}
-      <div className="px-6 py-4">
-        <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
-          <Droplets size={18} className="mr-2 text-blue-600" />
-          Tank Breakdown
-        </h4>
-        
-        <div className="grid grid-cols-2 gap-4">
-          {/* Liquid Tanks */}
-          <div className={`rounded-lg p-3 border transition-all ${
-            selectedFluid && getCompatibleTankTypes(selectedFluid).includes('LIQUID')
-              ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-100'
-              : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('LIQUID')
-                ? 'bg-gray-100 border-gray-300 opacity-50'
-                : 'bg-blue-50 border-blue-200'
-          }`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-blue-800">Liquid Mud</span>
-              <div className="flex items-center space-x-1">
-                <span className="text-lg font-bold text-blue-700">{vessel.liquidTanks}</span>
-                {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('LIQUID') && (
-                  <CheckCircle size={16} className="text-green-500" />
-                )}
-              </div>
-            </div>
-            <div className="text-xs text-blue-600">
-              {vessel.tanks.filter(t => t.type === 'LIQUID').reduce((sum, t) => sum + t.capacity, 0).toLocaleString()} bbl 
-              ({Math.round((vessel.tanks.filter(t => t.type === 'LIQUID').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                vessel.tanks.filter(t => t.type === 'LIQUID').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%)
-            </div>
-            <div className="w-full bg-blue-200 rounded-full h-1.5 mt-2">
-              <div 
-                className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${Math.round((vessel.tanks.filter(t => t.type === 'LIQUID').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                    vessel.tanks.filter(t => t.type === 'LIQUID').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%` 
-                }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Slop Tanks */}
-          <div className={`rounded-lg p-3 border transition-all ${
-            selectedFluid && getCompatibleTankTypes(selectedFluid).includes('SLOP')
-              ? 'bg-yellow-50 border-yellow-200 ring-2 ring-yellow-100'
-              : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('SLOP')
-                  ? 'bg-gray-100 border-gray-300 opacity-50'
-                  : 'bg-yellow-50 border-yellow-200'
-          }`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-yellow-800">Slop</span>
-              <div className="flex items-center space-x-1">
-                <span className="text-lg font-bold text-yellow-700">{vessel.slopTanks}</span>
-                {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('SLOP') && (
-                  <CheckCircle size={16} className="text-green-500" />
-                )}
-              </div>
-            </div>
-            <div className="text-xs text-yellow-600">
-              {vessel.tanks.filter(t => t.type === 'SLOP').reduce((sum, t) => sum + t.capacity, 0).toLocaleString()} bbl 
-              ({Math.round((vessel.tanks.filter(t => t.type === 'SLOP').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                vessel.tanks.filter(t => t.type === 'SLOP').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%)
-            </div>
-            <div className="w-full bg-yellow-200 rounded-full h-1.5 mt-2">
-              <div 
-                className="bg-yellow-600 h-1.5 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${Math.round((vessel.tanks.filter(t => t.type === 'SLOP').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                    vessel.tanks.filter(t => t.type === 'SLOP').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%` 
-                }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Methanol Tanks */}
-          <div className={`rounded-lg p-3 border transition-all ${
-            selectedFluid && getCompatibleTankTypes(selectedFluid).includes('METHANOL')
-              ? 'bg-purple-50 border-purple-200 ring-2 ring-purple-100'
-              : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('METHANOL')
-                ? 'bg-gray-100 border-gray-300 opacity-50'
-                : 'bg-purple-50 border-purple-200'
-          }`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-purple-800">Methanol</span>
-              <div className="flex items-center space-x-1">
-                <span className="text-lg font-bold text-purple-700">{vessel.methanolTanks}</span>
-                {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('METHANOL') && (
-                  <CheckCircle size={16} className="text-green-500" />
-                )}
-              </div>
-            </div>
-            <div className="text-xs text-purple-600">
-              {vessel.tanks.filter(t => t.type === 'METHANOL').reduce((sum, t) => sum + t.capacity, 0).toLocaleString()} bbl / gal 
-              ({Math.round((vessel.tanks.filter(t => t.type === 'METHANOL').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                vessel.tanks.filter(t => t.type === 'METHANOL').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%)
-            </div>
-            <div className="w-full bg-purple-200 rounded-full h-1.5 mt-2">
-              <div 
-                className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
-                style={{ 
-                  width: `${Math.round((vessel.tanks.filter(t => t.type === 'METHANOL').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                    vessel.tanks.filter(t => t.type === 'METHANOL').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%` 
-                }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Dry Bulk Tanks */}
-          {vessel.dryBulkTanks > 0 && (
-            <div className={`rounded-lg p-3 border transition-all ${
-              selectedFluid && getCompatibleTankTypes(selectedFluid).includes('DRY BULK')
-                ? 'bg-gray-50 border-gray-400 ring-2 ring-gray-200'
-                : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('DRY BULK')
-                  ? 'bg-gray-100 border-gray-300 opacity-50'
-                  : 'bg-gray-50 border-gray-200'
-            }`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-800">Dry Bulk</span>
-                <div className="flex items-center space-x-1">
-                  <span className="text-lg font-bold text-gray-700">{vessel.dryBulkTanks}</span>
-                  {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('DRY BULK') && (
-                    <CheckCircle size={16} className="text-green-500" />
-                  )}
+            {vessel.isTagged && (
+              <div className="flex items-center">
+                <div className="flex items-center space-x-1 bg-white bg-opacity-20 px-3 py-1 rounded-full">
+                  <Star size={16} fill="currentColor" />
+                  <span className="text-sm font-medium">Best Candidate</span>
                 </div>
+                <button 
+                  onClick={() => clearBestCandidate(vessel.id)}
+                  className="ml-2 p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors"
+                  title="Clear Best Candidate"
+                >
+                  <X size={16} />
+                </button>
               </div>
-              <div className="text-xs text-gray-600">
-                {vessel.tanks.filter(t => t.type === 'DRY BULK').reduce((sum, t) => sum + t.capacity, 0).toLocaleString()} cf 
-                ({Math.round((vessel.tanks.filter(t => t.type === 'DRY BULK').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                  vessel.tanks.filter(t => t.type === 'DRY BULK').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%)
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                <div 
-                  className="bg-gray-600 h-1.5 rounded-full transition-all duration-500"
-                  style={{ 
-                    width: `${Math.round((vessel.tanks.filter(t => t.type === 'DRY BULK').reduce((sum, t) => sum + t.currentLevel, 0) / 
-                      vessel.tanks.filter(t => t.type === 'DRY BULK').reduce((sum, t) => sum + t.capacity, 0)) * 100) || 0}%` 
-                  }}
-                ></div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Fluid Compatibility Section - Enhanced */}
-      {selectedFluid && (
-        <div className="px-6 py-4 bg-gray-50 border-t">
-          <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
-            <CheckCircle size={18} className="mr-2 text-green-600" />
-            {selectedFluid} Compatibility
-          </h4>
+        {/* Capacity Overview - Always based on Liquid Mud at 80% if no fluid selected */}
+        <div className="px-6 py-4 bg-gray-50">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold text-gray-800 flex items-center">
+              <BarChart3 size={18} className="mr-2 text-blue-600" />
+              {selectedFluid ? `${selectedFluid} Capacity` : 'Total Capacity Overview'}
+            </h4>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              vessel.utilizationPercentage > 80 
+                ? 'bg-red-100 text-red-700' 
+                : vessel.utilizationPercentage > 60
+                  ? 'bg-yellow-100 text-yellow-700'
+                  : 'bg-green-100 text-green-700'
+            }`}>
+              {vessel.utilizationPercentage}% Utilized
+            </span>
+          </div>
           
-          {vessel.totalCapacity === 0 ? (
-            <div className="text-center py-3 bg-red-50 rounded-lg border border-red-200">
-              <p className="text-red-700 font-medium text-sm">No compatible tanks available</p>
+          {selectedFluid && vessel.totalCapacity === 0 ? (
+            <div className="text-center py-4 bg-red-50 border border-red-200 rounded-lg">
+              <AlertTriangle size={24} className="mx-auto text-red-500 mb-2" />
+              <p className="text-red-700 font-medium">No Compatible Tanks</p>
+              <p className="text-red-600 text-sm">This vessel has no tanks suitable for {selectedFluid}</p>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                <div className="text-center bg-green-100 rounded-lg p-2 border border-green-200">
-                  <div className="text-lg font-bold text-green-700">{vessel.fluidCompatibleTanks}</div>
-                  <div className="text-xs text-green-600">Ready to Use</div>
+              <div className="grid grid-cols-3 gap-4 mb-3">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{vessel.totalCapacity.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Total Capacity</div>
+                  <div className="text-xs text-gray-500">{vessel.fluidUnit}</div>
                 </div>
-                <div className="text-center bg-yellow-100 rounded-lg p-2 border border-yellow-200">
-                  <div className="text-lg font-bold text-yellow-700">{vessel.needsCleaningTanks}</div>
-                  <div className="text-xs text-yellow-600">Need Cleaning</div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{vessel.availableCapacity.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Available</div>
+                  <div className="text-xs text-gray-500">{vessel.fluidUnit}</div>
                 </div>
-                <div className="text-center bg-red-100 rounded-lg p-2 border border-red-200">
-                  <div className="text-lg font-bold text-red-700">{vessel.fullyIncompatibleTanks}</div>
-                  <div className="text-xs text-red-600">Incompatible</div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">{vessel.usedCapacity.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Used</div>
+                  <div className="text-xs text-gray-500">{vessel.fluidUnit}</div>
                 </div>
               </div>
               
-              <div className="mt-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600">Immediate Availability</span>
-                  <span className="text-sm font-medium">
-                    {vessel.compatibleTanks.filter(t => t.currentLevel === 0 && 
-                      getCompatibilityLevel(t.contents === "Empty" ? "Empty" : t.contents, selectedFluid) === 2).length} empty tanks
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+              {/* Capacity Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div className="flex h-full">
                   <div 
-                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                    style={{ 
-                      width: `${Math.round((vessel.fluidCompatibleTanks / vessel.compatibleTanks.length) * 100)}%` 
-                    }}
+                    className="bg-orange-500 transition-all duration-500"
+                    style={{ width: `${vessel.utilizationPercentage}%` }}
+                  ></div>
+                  <div 
+                    className="bg-green-500 transition-all duration-500"
+                    style={{ width: `${100 - vessel.utilizationPercentage}%` }}
                   ></div>
                 </div>
               </div>
             </>
           )}
         </div>
-      )}
 
-      {/* Warnings */}
-      {vessel.warnings.length > 0 && (
-        <div className="px-6 py-4 bg-red-50 border-t border-red-200">
-          <h4 className="font-semibold text-red-800 mb-2 flex items-center">
-            <AlertTriangle size={18} className="mr-2 text-red-600" />
-            Warnings ({vessel.warnings.length})
+        {/* Tank Breakdown - Show compatibility status */}
+        <div className="px-6 py-4">
+          <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+            <Droplets size={18} className="mr-2 text-blue-600" />
+            Tank Breakdown
           </h4>
-          <div className="space-y-1">
-            {vessel.warnings.slice(0, 2).map((warning, index) => (
-              <div key={index} className="text-sm text-red-700 flex items-start">
-                <AlertTriangle size={14} className="mr-1 mt-0.5 flex-shrink-0" />
-                {warning}
+          
+          <div className="grid grid-cols-2 gap-4">
+            {/* Only show tank types that exist on this vessel */}
+            
+            {/* Liquid Tanks - Always show these */}
+            {vessel.liquidMudTanks > 0 && (
+              <div className={`rounded-lg p-3 border transition-all ${
+                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('LIQUID')
+                  ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-100'
+                  : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('LIQUID')
+                    ? 'bg-gray-100 border-gray-300 opacity-50'
+                    : 'bg-blue-50 border-blue-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-800">Liquid Mud</span>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-lg font-bold text-blue-700">{vessel.liquidMudTanks}</span>
+                    {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('LIQUID') && (
+                      <CheckCircle size={16} className="text-green-500" />
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-blue-600">
+                  {vessel.liquidMudTotalCapacity.toLocaleString()} bbl 
+                  ({vessel.liquidMudUtilizationPercentage}%)
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-1.5 mt-2">
+                  <div 
+                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${vessel.liquidMudUtilizationPercentage}%` }}
+                  ></div>
+                </div>
               </div>
-            ))}
-            {vessel.warnings.length > 2 && (
-              <div className="text-sm text-red-600 italic">
-                +{vessel.warnings.length - 2} more warnings
+            )}
+
+            {/* Slop Tanks - Only show if vessel has them */}
+            {vessel.slopTanks > 0 && (
+              <div className={`rounded-lg p-3 border transition-all ${
+                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('SLOP')
+                  ? 'bg-yellow-50 border-yellow-200 ring-2 ring-yellow-100'
+                  : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('SLOP')
+                      ? 'bg-gray-100 border-gray-300 opacity-50'
+                      : 'bg-yellow-50 border-yellow-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-yellow-800">Slop</span>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-lg font-bold text-yellow-700">{vessel.slopTanks}</span>
+                    {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('SLOP') && (
+                      <CheckCircle size={16} className="text-green-500" />
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-yellow-600">
+                  {vessel.slopTotalCapacity.toLocaleString()} bbl 
+                  ({vessel.slopUtilizationPercentage}%)
+                </div>
+                <div className="w-full bg-yellow-200 rounded-full h-1.5 mt-2">
+                  <div 
+                    className="bg-yellow-600 h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${vessel.slopUtilizationPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {/* Methanol Tanks - Only show if vessel has them */}
+            {vessel.methanolTanks > 0 && (
+              <div className={`rounded-lg p-3 border transition-all ${
+                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('METHANOL')
+                  ? 'bg-purple-50 border-purple-200 ring-2 ring-purple-100'
+                  : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('METHANOL')
+                    ? 'bg-gray-100 border-gray-300 opacity-50'
+                    : 'bg-purple-50 border-purple-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-purple-800">Methanol</span>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-lg font-bold text-purple-700">{vessel.methanolTanks}</span>
+                    {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('METHANOL') && (
+                      <CheckCircle size={16} className="text-green-500" />
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-purple-600">
+                  {vessel.methanolTotalCapacity.toLocaleString()} bbl / gal 
+                  ({vessel.methanolUtilizationPercentage}%)
+                </div>
+                <div className="w-full bg-purple-200 rounded-full h-1.5 mt-2">
+                  <div 
+                    className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${vessel.methanolUtilizationPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {/* Dry Bulk Tanks - Only show if vessel has them */}
+            {vessel.dryBulkTanks > 0 && (
+              <div className={`rounded-lg p-3 border transition-all ${
+                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('DRY BULK')
+                  ? 'bg-gray-50 border-gray-400 ring-2 ring-gray-200'
+                  : selectedFluid && !getCompatibleTankTypes(selectedFluid).includes('DRY BULK')
+                    ? 'bg-gray-100 border-gray-300 opacity-50'
+                    : 'bg-gray-50 border-gray-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-800">Dry Bulk</span>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-lg font-bold text-gray-700">{vessel.dryBulkTanks}</span>
+                    {selectedFluid && getCompatibleTankTypes(selectedFluid).includes('DRY BULK') && (
+                      <CheckCircle size={16} className="text-green-500" />
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">
+                  {vessel.dryBulkTotalCapacity.toLocaleString()} cf 
+                  ({vessel.dryBulkUtilizationPercentage}%)
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                  <div 
+                    className="bg-gray-600 h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${vessel.dryBulkUtilizationPercentage}%` }}
+                  ></div>
+                </div>
               </div>
             )}
           </div>
         </div>
-      )}
 
-      {/* Service Details */}
-      <div className="px-6 py-4 border-t bg-gray-50">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <Fuel size={16} className="text-blue-600" />
-            <span className="text-gray-600">Fuel:</span>
-            <span className="font-medium">{vessel.fuel || 'gal'}</span>
+        {/* Fluid Compatibility Section - Enhanced */}
+        {selectedFluid && (
+          <div className="px-6 py-4 bg-gray-50 border-t">
+            <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+              <CheckCircle size={18} className="mr-2 text-green-600" />
+              {selectedFluid} Compatibility
+            </h4>
+            
+            {vessel.totalCapacity === 0 ? (
+              <div className="text-center py-3 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-red-700 font-medium text-sm">No compatible tanks available</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="text-center bg-green-100 rounded-lg p-2 border border-green-200">
+                    <div className="text-lg font-bold text-green-700">{vessel.fluidCompatibleTanks}</div>
+                    <div className="text-xs text-green-600">Ready to Use</div>
+                  </div>
+                  <div className="text-center bg-yellow-100 rounded-lg p-2 border border-yellow-200">
+                    <div className="text-lg font-bold text-yellow-700">{vessel.needsCleaningTanks}</div>
+                    <div className="text-xs text-yellow-600">Need Cleaning</div>
+                  </div>
+                  <div className="text-center bg-red-100 rounded-lg p-2 border border-red-200">
+                    <div className="text-lg font-bold text-red-700">{vessel.fullyIncompatibleTanks}</div>
+                    <div className="text-xs text-red-600">Incompatible</div>
+                  </div>
+                </div>
+                
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-600">Immediate Availability</span>
+                    <span className="text-sm font-medium">
+                      {vessel.compatibleTanks.filter(t => t.currentLevel === 0 && 
+                        getCompatibilityLevel(t.contents === "Empty" ? "Empty" : t.contents, selectedFluid) === 2).length} empty tanks
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                      style={{ 
+                        width: `${Math.round((vessel.fluidCompatibleTanks / vessel.compatibleTanks.length) * 100)}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <div className="flex items-center space-x-2">
-            <Waves size={16} className="text-blue-600" />
-            <span className="text-gray-600">Water:</span>
-            <span className="font-medium">{vessel.water || 'gal'}</span>
+        )}
+
+        {/* Warnings */}
+        {vessel.warnings.length > 0 && (
+          <div className="px-6 py-4 bg-red-50 border-t border-red-200">
+            <h4 className="font-semibold text-red-800 mb-2 flex items-center">
+              <AlertTriangle size={18} className="mr-2 text-red-600" />
+              Warnings ({vessel.warnings.length})
+            </h4>
+            <div className="space-y-1">
+              {vessel.warnings.slice(0, 2).map((warning, index) => (
+                <div key={index} className="text-sm text-red-700 flex items-start">
+                  <AlertTriangle size={14} className="mr-1 mt-0.5 flex-shrink-0" />
+                  {warning}
+                </div>
+              ))}
+              {vessel.warnings.length > 2 && (
+                <div className="text-sm text-red-600 italic">
+                  +{vessel.warnings.length - 2} more warnings
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Service Details */}
+        <div className="px-6 py-4 border-t bg-gray-50">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center space-x-2">
+              <Fuel size={16} className="text-blue-600" />
+              <span className="text-gray-600">Fuel:</span>
+              <span className="font-medium">{vessel.fuel || 'gal'}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Waves size={16} className="text-blue-600" />
+              <span className="text-gray-600">Water:</span>
+              <span className="font-medium">{vessel.water || 'gal'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="px-6 py-4 bg-white border-t">
+          <div className="flex space-x-3">
+            <button
+              onClick={() => onSelectVessel(vessel)}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+                vessel.isTagged
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
+              }`}
+            >
+              <Eye size={16} className="inline mr-2" />
+              Manage Tanks
+            </button>
+            
+            <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+              Tag for Job
+            </button>
           </div>
         </div>
       </div>
-
-      {/* Action Buttons */}
-      <div className="px-6 py-4 bg-white border-t">
-        <div className="flex space-x-3">
-          <button
-            onClick={() => onSelectVessel(vessel)}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
-              vessel.isTagged
-                ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:shadow-lg'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
-            }`}
-          >
-            <Eye size={16} className="inline mr-2" />
-            Manage Tanks
-          </button>
-          
-          <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-            Tag for Job
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const CompactVesselRow = ({ vessel }) => (
     <div className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-l-4 ${
@@ -597,9 +702,18 @@ const FleetViewTab = ({ vessels, onSelectVessel }) => {
               <div className="flex items-center space-x-2">
                 <h3 className="text-lg font-bold text-gray-800">{vessel.name}</h3>
                 {vessel.isTagged && (
-                  <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
-                    Best Candidate
-                  </span>
+                  <div className="flex items-center">
+                    <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-medium">
+                      Best Candidate
+                    </span>
+                    <button 
+                      onClick={() => clearBestCandidate(vessel.id)}
+                      className="ml-1 p-1 rounded-full bg-orange-200 hover:bg-orange-300 text-orange-800 transition-colors"
+                      title="Clear Best Candidate"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 )}
               </div>
               <p className="text-sm text-gray-600">Updated: {vessel.lastUpdated}</p>
@@ -630,27 +744,37 @@ const FleetViewTab = ({ vessels, onSelectVessel }) => {
             
             {/* Tank Summary with compatibility indicators */}
             <div className="flex space-x-2">
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('LIQUID')
-                  ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-300'
-                  : 'bg-blue-100 text-blue-800'
-              }`}>
-                {vessel.liquidTanks} Liquid
-              </span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('METHANOL')
-                  ? 'bg-purple-100 text-purple-800 ring-2 ring-purple-300'
-                  : 'bg-purple-100 text-purple-800'
-              }`}>
-                {vessel.methanolTanks} Methanol
-              </span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                selectedFluid && getCompatibleTankTypes(selectedFluid).includes('SLOP')
-                  ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300'
-                  : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {vessel.slopTanks} Slop
-              </span>
+              {/* Only show tank types that exist on this vessel */}
+              {vessel.liquidMudTanks > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  selectedFluid && getCompatibleTankTypes(selectedFluid).includes('LIQUID')
+                    ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-300'
+                    : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {vessel.liquidMudTanks} Liquid
+                </span>
+              )}
+              
+              {vessel.methanolTanks > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  selectedFluid && getCompatibleTankTypes(selectedFluid).includes('METHANOL')
+                    ? 'bg-purple-100 text-purple-800 ring-2 ring-purple-300'
+                    : 'bg-purple-100 text-purple-800'
+                }`}>
+                  {vessel.methanolTanks} Methanol
+                </span>
+              )}
+              
+              {vessel.slopTanks > 0 && (
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  selectedFluid && getCompatibleTankTypes(selectedFluid).includes('SLOP')
+                    ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-300'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {vessel.slopTanks} Slop
+                </span>
+              )}
+              
               {vessel.dryBulkTanks > 0 && (
                 <span className={`text-xs px-2 py-1 rounded-full ${
                   selectedFluid && getCompatibleTankTypes(selectedFluid).includes('DRY BULK')

@@ -69,17 +69,7 @@ export const vessels = [
       // Pump System 3 (Tk 6S/P)
       { id: "Tk 6S", type: "LIQUID", capacity: 1188, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "20.03.2025", pressure: 0, client: null, pumpSystemId: 3 },
       { id: "Tk 6P", type: "LIQUID", capacity: 1188, currentLevel: 0, contents: "Empty", history: "Empty", lastCleaning: "20.03.2025", pressure: 0, client: null, pumpSystemId: 3 },
-      
-      // Pump System 4 (Methanol)
-      { id: "Meth 1S", type: "METHANOL", capacity: 506, currentLevel: 0, contents: "Empty", history: "Methanol", lastCleaning: "22.09.2021", pressure: 0, client: "Na Kika", pumpSystemId: 4 },
-      { id: "Meth 1P", type: "METHANOL", capacity: 506, currentLevel: 400, contents: "Methanol", history: "Methanol", lastCleaning: "22.09.2021", pressure: 2.0, client: "Na Kika", pumpSystemId: 4 },
-      { id: "Meth 2S", type: "METHANOL", capacity: 518, currentLevel: 0, contents: "Empty", history: "Methanol", lastCleaning: "22.09.2021", pressure: 0, client: "Na Kika", pumpSystemId: 4 },
-      { id: "Meth 2P", type: "METHANOL", capacity: 518, currentLevel: 400, contents: "Methanol", history: "Methanol", lastCleaning: "22.09.2021", pressure: 2.0, client: "Na Kika", pumpSystemId: 4 },
-      
-      // Slop Tank System (Slop)
-      { id: "Slop 1S", type: "SLOP", capacity: 990, currentLevel: 450, contents: "Trash Fluid", history: "Trash Fluid", lastCleaning: "04.09.2024", pressure: 1.8, client: null, pumpSystemId: 5 },
-      { id: "Slop 1P", type: "SLOP", capacity: 990, currentLevel: 600, contents: "Trash Fluid", history: "Trash Fluid", lastCleaning: "04.09.2024", pressure: 1.5, client: null, pumpSystemId: 5 },
-      
+       
       // Dry Bulk System (Dry Bulk - Total of 4 tanks can be used out of  the 5 tanks)
       { id: "Dry Bulk 1", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "cement", lastCleaning: "15.01.2025", pressure: 0, client: null, pumpSystemId: 6 },
       { id: "Dry Bulk 2", type: "DRY BULK", capacity: 2906, currentLevel: 0, contents: "Empty", history: "cement", lastCleaning: "08.02.2025", pressure: 0, client: null, pumpSystemId: 6 },
